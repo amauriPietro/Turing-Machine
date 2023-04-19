@@ -21,6 +21,8 @@ public class GammaManager : MonoBehaviour
         AddClicado();
         add.onClick.AddListener(AddClicado);
         rmv.onClick.AddListener(RmvClicado);
+        gamma.Add(' ');
+        display.text = "{ " + string.Join(", ", gamma) + " }";
     }
 
     void AddClicado(){
@@ -47,6 +49,9 @@ public class GammaManager : MonoBehaviour
         {
             foreach (char c in Input.inputString)
             {
+                if(c == ' '){
+                    continue;
+                }
                 if (!gamma.Contains(c) && adicionar){
                     gamma.Add(c);
                 }
