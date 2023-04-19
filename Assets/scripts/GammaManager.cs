@@ -13,9 +13,7 @@ public class GammaManager : MonoBehaviour
     
     public TextMeshProUGUI display;
 
-    public Button add;
-
-    public Button rmv;
+    public Button add, rmv;
 
     private bool adicionar = true;
 
