@@ -20,7 +20,7 @@ public class GameManager : MonoBehaviour
     }
 
     //Machine creation menu
-    public Button backM, gammaBt;
+    public Button backM, gammaBt, qBt;
 
     void backBtnAct(){
         if(mainMenu != null){
@@ -39,6 +39,15 @@ public class GameManager : MonoBehaviour
             gammaPan.SetActive(true);
         }
 
+    }
+
+    void qBtnAct(){
+        if(machineCreation != null){
+            machineCreation.SetActive(false);
+        }
+        if(qPan != null){
+            qPan.SetActive(true);
+        }
     }
 
     //Gamma
@@ -74,9 +83,59 @@ public class GameManager : MonoBehaviour
             machineCreation.SetActive(true);
         }
     }
+    //States
+    public Button up1, up2, down1, down2, backState, editState;
+    public TextMeshProUGUI count1, count2;
+    private int stateNum, stateCur;
 
+    void inc1(){
+        if(stateNum <= 99)
+            stateNum++;
+        count1.text = stateNum.ToString();
+    }
+
+    void inc2(){
+        if(stateCur < stateNum)
+            stateCur++;
+        count2.text = stateCur.ToString();
+    }
+
+    void dec1(){
+        if(stateNum >= 2)
+            stateNum--;
+        if(stateNum < stateCur)
+            stateCur--;
+        count1.text = stateNum.ToString();
+        count2.text = stateCur.ToString();
+    }
+
+    void dec2(){
+        if(stateCur >= 2)
+            stateCur--;
+        count2.text = stateCur.ToString();
+    }
+
+    void backBtnState(){
+        if(qPan != null){
+            qPan.SetActive(false);
+        }
+        if(machineCreation != null){
+            machineCreation.SetActive(true);
+        }
+    }
+
+    void editBtnState(){
+        if(qPan != null){
+            qPan.SetActive(false);
+        }
+        if(editPan != null){
+            editPan.SetActive(true);
+        }
+    }
+
+    //State editor
     //Multiple uses
-    public GameObject mainMenu,  machineCreation, gammaPan;
+    public GameObject mainMenu,  machineCreation, gammaPan, qPan, editPan;
     
     
     //Go to second scene
@@ -97,6 +156,7 @@ public class GameManager : MonoBehaviour
         //Machine creation menu
         backM.onClick.AddListener(backBtnAct);
         gammaBt.onClick.AddListener(gammaBtnAct);
+        qBt.onClick.AddListener(qBtnAct);
 
         //Gamma menu
          AddClicado();
@@ -106,7 +166,17 @@ public class GameManager : MonoBehaviour
         display.text = "{ " + string.Join(", ", gamma) + " }";
         backG.onClick.AddListener(backBtnGamma);
 
-        //Q menu
+        //state menu
+        stateNum = 1;
+        stateCur = 1;
+        count1.text = stateNum.ToString();
+        count2.text = stateNum.ToString();
+        up1.onClick.AddListener(inc1);
+        up2.onClick.AddListener(inc2);
+        down1.onClick.AddListener(dec1);
+        down2.onClick.AddListener(dec2);
+        backState.onClick.AddListener(backBtnState);
+        editState.onClick.AddListener(editBtnState);
 
     }
 
