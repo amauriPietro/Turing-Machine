@@ -1,9 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
+using System.Linq;
 
 public class GameManager : MonoBehaviour
 {
@@ -29,6 +31,7 @@ public class GameManager : MonoBehaviour
         if(machineCreation != null){
             machineCreation.SetActive(false);
         }
+        
     }
 
     void gammaBtnAct(){
@@ -130,10 +133,117 @@ public class GameManager : MonoBehaviour
         }
         if(editPan != null){
             editPan.SetActive(true);
+            edState.text = "Editing State " + stateCur.ToString();
+            //wcurBehaviour = 1;
         }
     }
 
     //State editor
+
+    private struct deltaT{
+        public int ns, rs, ws, mt;
+    }
+    public TextMeshProUGUI edState, edBehaviour, edNextState, edReadSymbol, edWriteSymbol, edMoveTo;
+    public Button lNextState, rNextState, lReadSymbol, rReadSymbol, lWriteSymbol, rWriteSymbol, lMoveTo, rMoveTo, edBackBtn, saveBt;
+    private int curNextState, curReadSymbol, curWriteSymbol, curMove;
+    private List<deltaT>[] delta = new List<deltaT>[99];
+
+    void lNextBtnState(){
+        curNextState = (curNextState - 1 + stateNum) % stateNum;
+        edNextState.text = (curNextState+1).ToString();
+    }
+    void rNextBtnState(){
+        curNextState = (curNextState + 1 + stateNum) % stateNum;
+        edNextState.text = (curNextState+1).ToString();
+    }
+    void lReadBtnState(){
+        curReadSymbol = (curReadSymbol - 1 + gamma.Count) % gamma.Count;
+        edReadSymbol.text = (gamma.ElementAt(curReadSymbol)).ToString();
+        curMove = 0;
+        curWriteSymbol = 0;
+        curNextState = 0;
+        if(delta[stateCur] != null){
+            foreach(var i in delta[stateCur]){
+                if(i.rs == curReadSymbol){
+                    curMove = i.mt;
+                    curWriteSymbol = i.ws;
+                    curNextState = i.ns;
+                }
+            }
+        }
+        edNextState.text = (curNextState+1).ToString();
+        edReadSymbol.text = (gamma.ElementAt(curReadSymbol)).ToString();
+        edWriteSymbol.text = (gamma.ElementAt(curWriteSymbol)).ToString();
+        if(curMove % 2 == 0)
+            edMoveTo.text = "L";
+        else
+            edMoveTo.text = "R";
+    }
+    void rReadBtnState(){
+        curReadSymbol = (curReadSymbol + 1 + gamma.Count) % gamma.Count;
+        edReadSymbol.text = (gamma.ElementAt(curReadSymbol)).ToString();
+        curMove = 0;
+        curWriteSymbol = 0;
+        curNextState = 0;
+        if(delta[stateCur] != null){
+            foreach(var i in delta[stateCur]){
+                if(i.rs == curReadSymbol){
+                    curMove = i.mt;
+                    curWriteSymbol = i.ws;
+                    curNextState = i.ns;
+                }
+            }
+        }
+        edNextState.text = (curNextState+1).ToString();
+        edReadSymbol.text = (gamma.ElementAt(curReadSymbol)).ToString();
+        edWriteSymbol.text = (gamma.ElementAt(curWriteSymbol)).ToString();
+        if(curMove % 2 == 0)
+            edMoveTo.text = "L";
+        else
+            edMoveTo.text = "R";
+        
+    }
+    void lWriteBtnState(){
+        curWriteSymbol = (curWriteSymbol - 1 + gamma.Count) % gamma.Count;
+        edWriteSymbol.text = (gamma.ElementAt(curWriteSymbol)).ToString();
+
+    }
+    void rWriteBtnState(){
+        curWriteSymbol = (curWriteSymbol + 1 + gamma.Count) % gamma.Count;
+        edWriteSymbol.text = (gamma.ElementAt(curWriteSymbol)).ToString();
+        
+    }
+    void MoveBtnState(){
+        curMove = (curMove+1) % 2;
+        if(curMove % 2 == 0)
+            edMoveTo.text = "L";
+        else
+            edMoveTo.text = "R";
+    }
+
+    void saveState(){
+        if(delta[stateCur] == null)
+            delta[stateCur] = new List<deltaT>();
+        foreach(var i in delta[stateCur]){
+            if(i.rs == curReadSymbol){
+                curMove = i.mt;
+                curWriteSymbol = i.ws;
+                curNextState = i.ns;
+                return;
+            }
+        }
+        delta[stateCur].Add(new deltaT { ns = curNextState, rs = curReadSymbol, ws = curWriteSymbol, mt = curMove});
+    }
+
+    void edBackAct(){
+        if(qPan != null){
+            qPan.SetActive(true);
+        }
+        if(editPan != null){
+            editPan.SetActive(false);
+        }
+    }
+
     //Multiple uses
     public GameObject mainMenu,  machineCreation, gammaPan, qPan, editPan;
     
@@ -177,6 +287,39 @@ public class GameManager : MonoBehaviour
         down2.onClick.AddListener(dec2);
         backState.onClick.AddListener(backBtnState);
         editState.onClick.AddListener(editBtnState);
+
+        //edit state menu
+        lNextState.onClick.AddListener(lNextBtnState);
+        rNextState.onClick.AddListener(rNextBtnState);
+        lReadSymbol.onClick.AddListener(lReadBtnState);
+        rReadSymbol.onClick.AddListener(rReadBtnState);
+        lWriteSymbol.onClick.AddListener(lWriteBtnState);
+        rWriteSymbol.onClick.AddListener(rWriteBtnState);
+        lMoveTo.onClick.AddListener(MoveBtnState);
+        rMoveTo.onClick.AddListener(MoveBtnState);
+        edBackBtn.onClick.AddListener(edBackAct);
+        saveBt.onClick.AddListener(saveState);
+
+        curMove = 0;
+        curWriteSymbol = 0;
+        curNextState = 0;
+        curReadSymbol = 0;
+        if(delta[stateCur] != null){
+            foreach(var i in delta[stateCur]){
+                if(i.rs == curReadSymbol){
+                    curMove = i.mt;
+                    curWriteSymbol = i.ws;
+                    curNextState = i.ns;
+                }
+            }
+        }
+        edNextState.text = (curNextState+1).ToString();
+        edReadSymbol.text = (gamma.ElementAt(curReadSymbol)).ToString();
+        edWriteSymbol.text = (gamma.ElementAt(curWriteSymbol)).ToString();
+        if(curMove % 2 == 0)
+            edMoveTo.text = "L";
+        else
+            edMoveTo.text = "R";
 
     }
 
