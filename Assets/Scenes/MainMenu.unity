@@ -1163,7 +1163,7 @@ GameObject:
   - component: {fileID: 191141092}
   - component: {fileID: 191141091}
   m_Layer: 5
-  m_Name: up3
+  m_Name: down3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1872,10 +1872,13 @@ MonoBehaviour:
   up2: {fileID: 760926665}
   down1: {fileID: 1897880370}
   down2: {fileID: 715541163}
-  backState: {fileID: 1744618644}
+  up3: {fileID: 1027581845}
+  down3: {fileID: 191141091}
+  backState: {fileID: 1850189930}
   editState: {fileID: 1572651416}
   count1: {fileID: 1628428498}
   count2: {fileID: 757479712}
+  count3: {fileID: 1739092488}
   edState: {fileID: 89082987}
   edNextState: {fileID: 754582688}
   edReadSymbol: {fileID: 538303343}
@@ -1891,6 +1894,7 @@ MonoBehaviour:
   rMoveTo: {fileID: 36750914}
   edBackBtn: {fileID: 1744618644}
   saveBt: {fileID: 651477267}
+  isFinal: {fileID: 752043987}
   mainMenu: {fileID: 945159220}
   machineCreation: {fileID: 1547613554}
   gammaPan: {fileID: 1529175275}
@@ -3567,7 +3571,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &651484339
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4589,7 +4593,6 @@ GameObject:
   - component: {fileID: 834735522}
   - component: {fileID: 834735526}
   - component: {fileID: 834735525}
-  - component: {fileID: 834735524}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -4617,24 +4620,6 @@ RectTransform:
   m_AnchoredPosition: {x: -201.50005, y: 50}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &834735524
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 834735521}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 190ffe6625b98404aaaa8552c9f23f78, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  red: {r: 0.56, g: 0.23, b: 0.21, a: 1}
-  green: {r: 0.39, g: 0.41, b: 0.19, a: 1}
-  grey: {r: 0.33, g: 0.33, b: 0.33, a: 1}
-  display: {fileID: 834735525}
-  add: {fileID: 957537173}
-  rmv: {fileID: 1009984042}
 --- !u!114 &834735525
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8685,7 +8670,6 @@ GameObject:
   - component: {fileID: 1540420688}
   - component: {fileID: 1540420691}
   - component: {fileID: 1540420690}
-  - component: {fileID: 1540420689}
   m_Layer: 5
   m_Name: SigmaText
   m_TagString: Untagged
@@ -8713,24 +8697,6 @@ RectTransform:
   m_AnchoredPosition: {x: -0.000044822693, y: -1.5999901}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1540420689
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1540420687}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 190ffe6625b98404aaaa8552c9f23f78, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  red: {r: 0.56, g: 0.23, b: 0.21, a: 1}
-  green: {r: 0.39, g: 0.41, b: 0.19, a: 1}
-  grey: {r: 0.33, g: 0.33, b: 0.33, a: 1}
-  display: {fileID: 1540420690}
-  add: {fileID: 938011890}
-  rmv: {fileID: 2135721330}
 --- !u!114 &1540420690
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10415,7 +10381,7 @@ GameObject:
   - component: {fileID: 1850189931}
   - component: {fileID: 1850189930}
   m_Layer: 5
-  m_Name: Button
+  m_Name: ButtonSaveState
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -11054,7 +11020,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1970305397
 RectTransform:
   m_ObjectHideFlags: 0

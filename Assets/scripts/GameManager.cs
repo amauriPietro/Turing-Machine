@@ -45,7 +45,7 @@ public class GameManager : MonoBehaviour
         for(int i = 1; stateNum >= i; i++){
             q.Add(i.ToString());
         }
-        turingMachine TM = new turingMachine { gammaTM = gamma, deltaTM = delta, bTM = b, q0TM = stateInit, qTM = q, sigmaTM = sigma, fTM = f};
+        turingMachine TM = new turingMachine { gammaTM = gamma, deltaTM = delta, bTM = b, q0TM = stateInit-1, qTM = q, sigmaTM = sigma, fTM = f};
         saveToFile(TM);
         if(mainMenu != null){
             mainMenu.SetActive(true);
