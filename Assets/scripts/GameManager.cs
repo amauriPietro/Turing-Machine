@@ -6,6 +6,9 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
 using System.Linq;
+using System;
+using System.IO;
+using Newtonsoft.Json;
 
 public class GameManager : MonoBehaviour
 {
@@ -24,20 +27,26 @@ public class GameManager : MonoBehaviour
     //Machine creation menu
     public Button backM, gammaBt, qBt;
 
+    [Serializable]
     private struct turingMachine{
         
-        HashSet<string> qTM;
-        HashSet<char> sigmaTM;
-        HashSet<char> gammaTM;
-        List<deltaT>[] deltaTM;
-        int q0TM;
-        char bTM;
-        bool[] fTM;
+        public List<string> qTM { get; set; }
+        public HashSet<char> sigmaTM { get; set; }
+        public HashSet<char> gammaTM { get; set; }
+        public List<deltaT>[] deltaTM { get; set; }
+        public int q0TM { get; set; }
+        public int bTM { get; set; }
+        public List<int> fTM { get; set; }
         
     }
 
     void backBtnAct(){
-        //turingMachine TM = { gammaTM = gamma, deltaTM = delta, bTM = b, q0TM = q0, qTM = q, sigmaTM = sigma, fTM = f};
+        List<string> q = new List<string>();
+        for(int i = 1; stateNum >= i; i++){
+            q.Add(i.ToString());
+        }
+        turingMachine TM = new turingMachine { gammaTM = gamma, deltaTM = delta, bTM = b, q0TM = stateInit, qTM = q, sigmaTM = sigma, fTM = f};
+        saveToFile(TM);
         if(mainMenu != null){
             mainMenu.SetActive(true);
         }
@@ -45,6 +54,26 @@ public class GameManager : MonoBehaviour
             machineCreation.SetActive(false);
         }
 
+    }
+
+    void saveToFile(turingMachine TM){
+        foreach(var v in TM.gammaTM){
+            Debug.Log(v);
+        }
+        string savesDir = Path.Combine(Application.dataPath, "saves"), fileName;
+        if (!Directory.Exists(savesDir))
+        {
+            Directory.CreateDirectory(savesDir);
+        }
+        string[] files = Directory.GetFiles(savesDir);
+        fileName = Path.Combine(savesDir, ("save " + files.Length));
+
+        string json = JsonConvert.SerializeObject(TM);
+
+        using (StreamWriter writer = new StreamWriter(fileName))
+        {
+            writer.Write(json);
+        }
     }
 
     void gammaBtnAct(){
@@ -155,9 +184,9 @@ public class GameManager : MonoBehaviour
     }
 
     //States
-    public Button up1, up2, down1, down2, backState, editState;
-    public TextMeshProUGUI count1, count2;
-    private int stateNum, stateCur;
+    public Button up1, up2, down1, down2, up3, down3, backState, editState;
+    public TextMeshProUGUI count1, count2, count3;
+    private int stateNum, stateCur, stateInit;
 
     void inc1(){
         if(stateNum <= 99)
@@ -169,6 +198,11 @@ public class GameManager : MonoBehaviour
         if(stateCur < stateNum)
             stateCur++;
         count2.text = stateCur.ToString();
+    }
+    void inc3(){
+        if(stateInit < stateNum)
+            stateInit++;
+        count3.text = stateInit.ToString();
     }
 
     void dec1(){
@@ -184,6 +218,12 @@ public class GameManager : MonoBehaviour
         if(stateCur >= 2)
             stateCur--;
         count2.text = stateCur.ToString();
+    }
+
+    void dec3(){
+        if(stateInit >= 2)
+            stateInit--;
+        count3.text = stateInit.ToString();
     }
 
     void backBtnState(){
@@ -202,6 +242,10 @@ public class GameManager : MonoBehaviour
         if(editPan != null){
             editPan.SetActive(true);
             edState.text = "Editing State " + stateCur.ToString();
+            if(f.Contains(stateCur))
+                isFinal.isOn = true;
+            else
+                isFinal.isOn = false;
             //wcurBehaviour = 1;
         }
     }
@@ -213,8 +257,10 @@ public class GameManager : MonoBehaviour
     }
     public TextMeshProUGUI edState, edNextState, edReadSymbol, edWriteSymbol, edMoveTo;
     public Button lNextState, rNextState, lReadSymbol, rReadSymbol, lWriteSymbol, rWriteSymbol, lMoveTo, rMoveTo, edBackBtn, saveBt;
+    public Toggle isFinal;
     private int curNextState, curReadSymbol, curWriteSymbol, curMove;
     private List<deltaT>[] delta = new List<deltaT>[99];
+    private List<int> f = new List<int>();
 
     void lNextBtnState(){
         curNextState = (curNextState - 1 + stateNum) % stateNum;
@@ -312,6 +358,17 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    void finalAct(bool isFinalOn){
+        if(isFinalOn){
+            if(!f.Contains(stateCur))
+                f.Add(stateCur);
+        }
+        else{
+            if(f.Contains(stateCur))
+                f.Remove(stateCur);
+        }
+    }
+
     //Panel management
     public GameObject mainMenu,  machineCreation, gammaPan, qPan, editPan, sigmaPan;
     
@@ -357,12 +414,16 @@ public class GameManager : MonoBehaviour
         //state menu
         stateNum = 1;
         stateCur = 1;
+        stateInit = 1;
         count1.text = stateNum.ToString();
         count2.text = stateNum.ToString();
+        count3.text = stateInit.ToString();
         up1.onClick.AddListener(inc1);
         up2.onClick.AddListener(inc2);
+        up3.onClick.AddListener(inc3);
         down1.onClick.AddListener(dec1);
         down2.onClick.AddListener(dec2);
+        down3.onClick.AddListener(dec3);
         backState.onClick.AddListener(backBtnState);
         editState.onClick.AddListener(editBtnState);
 
@@ -377,6 +438,7 @@ public class GameManager : MonoBehaviour
         rMoveTo.onClick.AddListener(MoveBtnState);
         edBackBtn.onClick.AddListener(edBackAct);
         saveBt.onClick.AddListener(saveState);
+        isFinal.onValueChanged.AddListener(finalAct);
 
         curMove = 0;
         curWriteSymbol = 0;
