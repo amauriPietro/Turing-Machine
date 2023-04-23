@@ -24,14 +24,27 @@ public class GameManager : MonoBehaviour
     //Machine creation menu
     public Button backM, gammaBt, qBt;
 
+    private struct turingMachine{
+        
+        HashSet<string> qTM;
+        HashSet<char> sigmaTM;
+        HashSet<char> gammaTM;
+        List<deltaT>[] deltaTM;
+        int q0TM;
+        char bTM;
+        bool[] fTM;
+        
+    }
+
     void backBtnAct(){
+        //turingMachine TM = { gammaTM = gamma, deltaTM = delta, bTM = b, q0TM = q0, qTM = q, sigmaTM = sigma, fTM = f};
         if(mainMenu != null){
             mainMenu.SetActive(true);
         }
         if(machineCreation != null){
             machineCreation.SetActive(false);
         }
-        
+
     }
 
     void gammaBtnAct(){
@@ -58,16 +71,17 @@ public class GameManager : MonoBehaviour
     green = new Color(0.39f, 0.41f, 0.19f),
     grey = new Color(0.33f, 0.33f, 0.33f);
     public HashSet<char> gamma = new HashSet<char>();
-    public TextMeshProUGUI display;
-    public Button addG, rmvG, backG;
-    private bool adicionar = true;
+    public TextMeshProUGUI displayGamma, bText;
+    public Button addG, rmvG, backG, sigmaBt, lBBt, rBBt;
+    private bool adicionarGamma = true;
+    private int b;
 
     void AddClicado(){
         addG.GetComponent<Image>().color = green;
 
         rmvG.GetComponent<Image>().color = grey;
 
-        adicionar = true;
+        adicionarGamma = true;
     }
 
     void RmvClicado(){
@@ -75,7 +89,7 @@ public class GameManager : MonoBehaviour
 
         rmvG.GetComponent<Image>().color = red;
 
-        adicionar = false;
+        adicionarGamma = false;
     }
 
     void backBtnGamma(){
@@ -86,6 +100,60 @@ public class GameManager : MonoBehaviour
             machineCreation.SetActive(true);
         }
     }
+
+    void lBAct(){
+        if(b > 0)
+            b--;
+        if(b < gamma.Count && gamma.Count > 0)
+            bText.text = (gamma.ElementAt(b)).ToString();
+    }
+
+    void rBAct(){
+        b++;
+        if(b < gamma.Count && gamma.Count > 0)
+            bText.text = (gamma.ElementAt(b)).ToString();
+        
+    }
+
+    void sigmaBtAct(){
+        if(sigmaPan != null){
+            sigmaPan.SetActive(true);
+        }
+        if(gammaPan != null){
+            gammaPan.SetActive(false);
+        }
+    }
+    //Sigma
+    public HashSet<char> sigma = new HashSet<char>();
+    public TextMeshProUGUI displaySigma;
+    public Button addS, rmvS, backSigma;
+    private bool adicionarSigma = true;
+
+    void backSigmaAct(){
+        if(sigmaPan != null){
+            sigmaPan.SetActive(false);
+        }
+        if(gammaPan != null){
+            gammaPan.SetActive(true);
+        }
+    }
+
+    void AddClicadoSigma(){
+        addS.GetComponent<Image>().color = green;
+
+        rmvS.GetComponent<Image>().color = grey;
+
+        adicionarSigma = true;
+    }
+
+    void RmvClicadoSigma(){
+        addS.GetComponent<Image>().color = grey;
+
+        rmvS.GetComponent<Image>().color = red;
+
+        adicionarSigma = false;
+    }
+
     //States
     public Button up1, up2, down1, down2, backState, editState;
     public TextMeshProUGUI count1, count2;
@@ -143,7 +211,7 @@ public class GameManager : MonoBehaviour
     private struct deltaT{
         public int ns, rs, ws, mt;
     }
-    public TextMeshProUGUI edState, edBehaviour, edNextState, edReadSymbol, edWriteSymbol, edMoveTo;
+    public TextMeshProUGUI edState, edNextState, edReadSymbol, edWriteSymbol, edMoveTo;
     public Button lNextState, rNextState, lReadSymbol, rReadSymbol, lWriteSymbol, rWriteSymbol, lMoveTo, rMoveTo, edBackBtn, saveBt;
     private int curNextState, curReadSymbol, curWriteSymbol, curMove;
     private List<deltaT>[] delta = new List<deltaT>[99];
@@ -244,8 +312,8 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    //Multiple uses
-    public GameObject mainMenu,  machineCreation, gammaPan, qPan, editPan;
+    //Panel management
+    public GameObject mainMenu,  machineCreation, gammaPan, qPan, editPan, sigmaPan;
     
     
     //Go to second scene
@@ -269,12 +337,22 @@ public class GameManager : MonoBehaviour
         qBt.onClick.AddListener(qBtnAct);
 
         //Gamma menu
-         AddClicado();
+        AddClicado();
         addG.onClick.AddListener(AddClicado);
         rmvG.onClick.AddListener(RmvClicado);
-        gamma.Add(' ');
-        display.text = "{ " + string.Join(", ", gamma) + " }";
+        displayGamma.text = "{ " + string.Join(", ", gamma) + " }";
         backG.onClick.AddListener(backBtnGamma);
+        lBBt.onClick.AddListener(lBAct);
+        rBBt.onClick.AddListener(rBAct);
+        sigmaBt.onClick.AddListener(sigmaBtAct);
+        b = 0;
+
+        //Sigma menu
+        AddClicadoSigma();
+        addS.onClick.AddListener(AddClicadoSigma);
+        rmvS.onClick.AddListener(RmvClicadoSigma);
+        displaySigma.text = "{ " + string.Join(", ", sigma) + " }";
+        backSigma.onClick.AddListener(backSigmaAct);
 
         //state menu
         stateNum = 1;
@@ -314,31 +392,69 @@ public class GameManager : MonoBehaviour
             }
         }
         edNextState.text = (curNextState+1).ToString();
-        edReadSymbol.text = (gamma.ElementAt(curReadSymbol)).ToString();
-        edWriteSymbol.text = (gamma.ElementAt(curWriteSymbol)).ToString();
+        if(gamma.Count > 0){
+            edReadSymbol.text = (gamma.ElementAt(curReadSymbol)).ToString();
+            edWriteSymbol.text = (gamma.ElementAt(curWriteSymbol)).ToString();
+        }
+        else{
+            edReadSymbol.text = "";
+            edWriteSymbol.text = "";
+        }
+        
         if(curMove % 2 == 0)
             edMoveTo.text = "L";
         else
             edMoveTo.text = "R";
+
+        //pannel management
+        machineCreation.SetActive(false);
+        gammaPan.SetActive(false);
+        qPan.SetActive(false);
+        editPan.SetActive(false);
+        sigmaPan.SetActive(false);
+        mainMenu.SetActive(true);
 
     }
 
     void Update(){
         if (Input.anyKeyDown)
         {
-            foreach (char c in Input.inputString)
-            {
-                if(c == ' '){
-                    continue;
+            if(gammaPan.activeSelf){
+                foreach (char c in Input.inputString)
+                {
+                    if (!gamma.Contains(c) && adicionarGamma){
+                        gamma.Add(c);
+                    }
+                    if(gamma.Contains(c) && !adicionarGamma){
+                        gamma.Remove(c);
+                        if(sigma.Contains(c))
+                            sigma.Remove(c);
+                    }
                 }
-                if (!gamma.Contains(c) && adicionar){
-                    gamma.Add(c);
-                }
-                if(gamma.Contains(c) && !adicionar){
-                    gamma.Remove(c);
-                }
+                displayGamma.text = "{ " + string.Join(", ", gamma) + " }";
+                if(b >= gamma.Count)
+                    b--;
+                if(b < gamma.Count && gamma.Count > 0)
+                    bText.text = (gamma.ElementAt(b)).ToString();
+                else
+                    bText.text = "";
+                
             }
-            display.text = "{ " + string.Join(", ", gamma) + " }";
+            if(sigmaPan.activeSelf){
+                foreach (char c in Input.inputString)
+                {
+                    if (!sigma.Contains(c) && adicionarSigma && gamma.Contains(c)){
+                        Debug.Log("passeio");
+                        sigma.Add(c);
+                    }
+                    if(sigma.Contains(c) && !adicionarSigma){
+                        sigma.Remove(c);
+                    }
+                }
+                Debug.Log(string.Join(", ", sigma));
+                displaySigma.text = "{ " + string.Join(", ", sigma) + " }";                
+            }
+
         }
     }
 
