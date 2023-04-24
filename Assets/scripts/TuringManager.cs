@@ -41,7 +41,7 @@ public class TuringManager : MonoBehaviour
     public TextMeshProUGUI[] tileText = new TextMeshProUGUI[9], tilePos = new TextMeshProUGUI[9];
     public TextMeshProUGUI currState;
     public float animationSpeed;
-    public Button leftBt, rightBt, mudaC, startBt;
+    public Button leftBt, rightBt, mudaC, startBt, goBack;
     private bool failed;
     
     private turingMachine TM;
@@ -57,6 +57,8 @@ public class TuringManager : MonoBehaviour
         rightBt.onClick.AddListener(moveR);
         mudaC.onClick.AddListener(nextSymbol);
         startBt.onClick.AddListener(startSim);
+
+        goBack.onClick.AddListener(LoadMain);
         for(int i = 0; 1000 > i; i++){
             nonNegPos[i] = TM.bTM;
             negPos[i] = TM.bTM;
@@ -71,10 +73,15 @@ public class TuringManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        loadPosition();
     }
     void moveR(){
-        
+
+        leftBt.onClick.RemoveListener(moveL);
+        rightBt.onClick.RemoveListener(moveR);
+        mudaC.onClick.RemoveListener(nextSymbol);
+        startBt.onClick.RemoveListener(startSim);
+
         for(int i = 0; 7 > i; i++){
             LeanTween.moveLocalX(tile[i], tile[i].transform.localPosition.x - 50f, animationSpeed);
         }
@@ -85,6 +92,12 @@ public class TuringManager : MonoBehaviour
     }
 
     void moveL(){
+
+        leftBt.onClick.RemoveListener(moveL);
+        rightBt.onClick.RemoveListener(moveR);
+        mudaC.onClick.RemoveListener(nextSymbol);
+        startBt.onClick.RemoveListener(startSim);
+
         for(int i = 0; 7 > i; i++){
             LeanTween.moveLocalX(tile[i], tile[i].transform.localPosition.x + 50f, animationSpeed);
         }
@@ -94,7 +107,7 @@ public class TuringManager : MonoBehaviour
         StartCoroutine(afterL());
     }
     void loadFromFile(){
-        string filePath = Path.Combine(Application.dataPath, "saves", "save 0");
+        string filePath = Path.Combine(Application.dataPath, "saves", "save " + PlayerPrefs.GetInt("saveN").ToString());
         if (File.Exists(filePath))
         {
             string jsonData = File.ReadAllText(filePath);
@@ -132,6 +145,8 @@ public class TuringManager : MonoBehaviour
         if(TM.fTM.Contains(C.state)){
             currState.text = "Accepted!";
             currState.color = Color.green;
+            leftBt.onClick.AddListener(moveL);
+            rightBt.onClick.AddListener(moveR);
             return;
         }
         foreach(var it in TM.deltaTM[C.state]){
@@ -163,6 +178,8 @@ public class TuringManager : MonoBehaviour
         if(failed){
             currState.text = "Rejected!";
             currState.color = Color.red;
+            leftBt.onClick.AddListener(moveL);
+            rightBt.onClick.AddListener(moveR);
             return;
         }
         currState.text = "Current state: " + TM.qTM[C.state];
@@ -176,7 +193,11 @@ public class TuringManager : MonoBehaviour
 
         C.pos++;
         loadPosition();
-        //tile[7].transform.position = tileAux2.transform.position;
+
+        leftBt.onClick.AddListener(moveL);
+        rightBt.onClick.AddListener(moveR);
+        mudaC.onClick.AddListener(nextSymbol);
+        startBt.onClick.AddListener(startSim);
 
     }
 
@@ -196,7 +217,10 @@ public class TuringManager : MonoBehaviour
 
         C.pos--;
         loadPosition();
-
+        leftBt.onClick.AddListener(moveL);
+        rightBt.onClick.AddListener(moveR);
+        mudaC.onClick.AddListener(nextSymbol);
+        startBt.onClick.AddListener(startSim);
     }
 
     void loadPosition(){
@@ -234,11 +258,16 @@ public class TuringManager : MonoBehaviour
     void startSim(){
         C.pos = 0;
         loadPosition();
-        leftBt.onClick.RemoveListener(moveR);
-        rightBt.onClick.RemoveListener(moveL);
+        leftBt.onClick.RemoveListener(moveL);
+        rightBt.onClick.RemoveListener(moveR);
         mudaC.onClick.RemoveListener(nextSymbol);
         startBt.onClick.RemoveListener(startSim);
         nextMove();
 
+    }
+
+    public void LoadMain()
+    {
+        SceneManager.LoadScene("MainMenu");
     }
 }

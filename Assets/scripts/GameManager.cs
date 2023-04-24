@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour
 {
     //Main menu
     public Button create, execute, quit;
+    public InputField saveNumber;
 
     void createBt(){
         if(mainMenu != null){
@@ -22,6 +23,14 @@ public class GameManager : MonoBehaviour
         if(machineCreation != null){
             machineCreation.SetActive(true);
         }
+    }
+
+    void executeBt(){
+        PlayerPrefs.SetInt("saveN", int.Parse(saveNumber.text));
+        SceneManager.LoadScene("TuringMachine");
+    }
+    void quitBt(){
+        Application.Quit();
     }
 
     //Machine creation menu
@@ -371,15 +380,6 @@ public class GameManager : MonoBehaviour
 
     //Panel management
     public GameObject mainMenu,  machineCreation, gammaPan, qPan, editPan, sigmaPan;
-    
-    
-    //Go to second scene
-    void executeBt(){
-        //UnityEngine.SceneManagement.SceneManager.LoadScene(scene2, LoadSceneMode.Single);
-    }
-    void quitBt(){
-        Application.Quit();
-    }
 
     void Start(){
 
