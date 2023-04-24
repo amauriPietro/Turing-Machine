@@ -41,7 +41,8 @@ public class TuringManager : MonoBehaviour
     public TextMeshProUGUI[] tileText = new TextMeshProUGUI[9], tilePos = new TextMeshProUGUI[9];
     public TextMeshProUGUI currState;
     public float animationSpeed;
-    public Button leftBt, rightBt, mudaC;
+    public Button leftBt, rightBt, mudaC, startBt;
+    private bool failed;
     
     private turingMachine TM;
     private cabecote C;
@@ -52,9 +53,10 @@ public class TuringManager : MonoBehaviour
         loadFromFile();
         C.pos = 0;
         C.state = TM.q0TM;
-        leftBt.onClick.AddListener(moveR);
-        rightBt.onClick.AddListener(moveL);
+        leftBt.onClick.AddListener(moveL);
+        rightBt.onClick.AddListener(moveR);
         mudaC.onClick.AddListener(nextSymbol);
+        startBt.onClick.AddListener(startSim);
         for(int i = 0; 1000 > i; i++){
             nonNegPos[i] = TM.bTM;
             negPos[i] = TM.bTM;
@@ -62,6 +64,7 @@ public class TuringManager : MonoBehaviour
 
         currState.text = "Current state: " + TM.qTM[C.state];
         loadPosition();
+        
 
     }
 
@@ -70,7 +73,7 @@ public class TuringManager : MonoBehaviour
     {
         
     }
-    void moveL(){
+    void moveR(){
         
         for(int i = 0; 7 > i; i++){
             LeanTween.moveLocalX(tile[i], tile[i].transform.localPosition.x - 50f, animationSpeed);
@@ -78,17 +81,17 @@ public class TuringManager : MonoBehaviour
         //assign char to tileAux2
 
         LeanTween.moveLocalX(tileAux2, tileAux2.transform.localPosition.x - 50f, animationSpeed);
-        StartCoroutine(afterL());
+        StartCoroutine(afterR());
     }
 
-    void moveR(){
+    void moveL(){
         for(int i = 0; 7 > i; i++){
             LeanTween.moveLocalX(tile[i], tile[i].transform.localPosition.x + 50f, animationSpeed);
         }
         //assign char to tileAux1
         
         LeanTween.moveLocalX(tileAux1, tileAux1.transform.localPosition.x + 50f, animationSpeed);
-        StartCoroutine(afterR());
+        StartCoroutine(afterL());
     }
     void loadFromFile(){
         string filePath = Path.Combine(Application.dataPath, "saves", "save 0");
@@ -111,7 +114,7 @@ public class TuringManager : MonoBehaviour
                 nonNegPos[C.pos] = (nonNegPos[C.pos] + 1) % TM.gammaTM.Count;
                 Debug.Log(nonNegPos[C.pos]);
 
-            }while(!TM.sigmaTM.Contains(TM.gammaTM.ElementAt(nonNegPos[C.pos])) || nonNegPos[C.pos] == TM.bTM);
+            }while(!TM.sigmaTM.Contains(TM.gammaTM.ElementAt(nonNegPos[C.pos])) && nonNegPos[C.pos] != TM.bTM);
         }
         else{
             do
@@ -119,20 +122,54 @@ public class TuringManager : MonoBehaviour
 
                 negPos[-C.pos] = (negPos[-C.pos] + 1) % TM.gammaTM.Count;
 
-            }while(!TM.sigmaTM.Contains(TM.gammaTM.ElementAt(negPos[-C.pos])) || negPos[-C.pos] == TM.bTM);
+            }while(!TM.sigmaTM.Contains(TM.gammaTM.ElementAt(negPos[-C.pos])) && negPos[-C.pos] != TM.bTM);
         }
         loadPosition();
     }
 
     void nextMove(){
+        failed = true;
         if(TM.fTM.Contains(C.state)){
             currState.text = "Accepted!";
             currState.color = Color.green;
             return;
         }
+        foreach(var it in TM.deltaTM[C.state]){
+            if(C.pos >= 0){
+                if(it.rs == nonNegPos[C.pos]){
+                    nonNegPos[C.pos] = it.ws;
+                    C.state = it.ns;
+                    if(it.mt % 2 == 0)
+                        moveL();
+                    else
+                        moveR();
+                    failed = false;
+                    break;
+                }
+            }
+            else{
+                if(it.rs == negPos[-C.pos]){
+                    negPos[-C.pos] = it.ws;
+                    C.state = it.ns;
+                    if(it.mt % 2 == 0)
+                        moveL();
+                    else
+                        moveR();
+                    failed = false;
+                    break;
+                }
+            }
+        }
+        if(failed){
+            currState.text = "Rejected!";
+            currState.color = Color.red;
+            return;
+        }
+        currState.text = "Current state: " + TM.qTM[C.state];
+        StartCoroutine(afterNextMove());
     }
 
-    IEnumerator afterL()
+    IEnumerator afterR()
     {
 
         yield return new WaitForSeconds(animationSpeed);
@@ -143,7 +180,16 @@ public class TuringManager : MonoBehaviour
 
     }
 
-    IEnumerator afterR()
+    IEnumerator afterNextMove()
+    {
+
+        yield return new WaitForSeconds(animationSpeed*4);
+
+        nextMove();
+
+    }
+
+    IEnumerator afterL()
     {
 
         yield return new WaitForSeconds(animationSpeed);
@@ -183,6 +229,16 @@ public class TuringManager : MonoBehaviour
             else
                 tileText[i].text = TM.gammaTM.ElementAt(negPos[0-(C.pos + i - 3)]).ToString();
         }
+
+    }
+    void startSim(){
+        C.pos = 0;
+        loadPosition();
+        leftBt.onClick.RemoveListener(moveR);
+        rightBt.onClick.RemoveListener(moveL);
+        mudaC.onClick.RemoveListener(nextSymbol);
+        startBt.onClick.RemoveListener(startSim);
+        nextMove();
 
     }
 }
