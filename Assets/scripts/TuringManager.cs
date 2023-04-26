@@ -256,7 +256,7 @@ public class TuringManager : MonoBehaviour
 
     }
     void startSim(){
-        C.pos = 0;
+        //C.pos = 5;
         loadPosition();
         leftBt.onClick.RemoveListener(moveL);
         rightBt.onClick.RemoveListener(moveR);
