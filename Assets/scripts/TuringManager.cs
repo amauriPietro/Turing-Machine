@@ -21,8 +21,8 @@ public class TuringManager : MonoBehaviour
     private struct turingMachine{
         
         public List<string> qTM { get; set; }
-        public HashSet<char> sigmaTM { get; set; }
-        public HashSet<char> gammaTM { get; set; }
+        public List<char> sigmaTM { get; set; }
+        public List<char> gammaTM { get; set; }
         public List<deltaT>[] deltaTM { get; set; }
         public int q0TM { get; set; }
         public int bTM { get; set; }
@@ -39,24 +39,28 @@ public class TuringManager : MonoBehaviour
     public GameObject tileAux1, tileAux2;
     //7 and 8 are for aux1 and aux2
     public TextMeshProUGUI[] tileText = new TextMeshProUGUI[9], tilePos = new TextMeshProUGUI[9];
-    public TextMeshProUGUI currState;
+    public TextMeshProUGUI machineState, acceptState, currSpeed;
     public float animationSpeed;
-    public Button leftBt, rightBt, mudaC, startBt, goBack;
-    private bool failed;
+    public Button leftBt, rightBt, mudaC, multiBt, goBack, fastBt, slowBt;
+    private bool passed, isMachineExecuting, isMachineMoving;
     
     private turingMachine TM;
     private cabecote C;
     private int[] nonNegPos = new int[1000], negPos = new int[1000];
     void Start()
     {
-        animationSpeed = 0.5f;
+        animationSpeed = 2f;
         loadFromFile();
         C.pos = 0;
+        isMachineExecuting = false;
+        isMachineMoving = false;
         C.state = TM.q0TM;
-        leftBt.onClick.AddListener(moveL);
-        rightBt.onClick.AddListener(moveR);
+        leftBt.onClick.AddListener(moveLBt);
+        rightBt.onClick.AddListener(moveRBt);
         mudaC.onClick.AddListener(nextSymbol);
-        startBt.onClick.AddListener(startSim);
+        multiBt.onClick.AddListener(startSim);
+        fastBt.onClick.AddListener(speedUp);
+        slowBt.onClick.AddListener(speedDown);
 
         goBack.onClick.AddListener(LoadMain);
         for(int i = 0; 1000 > i; i++){
@@ -64,7 +68,9 @@ public class TuringManager : MonoBehaviour
             negPos[i] = TM.bTM;
         }
 
-        currState.text = "Current state: " + TM.qTM[C.state];
+        machineState.text = "Current state: " + TM.qTM[C.state];
+        acceptState.text = "Testing";
+        currSpeed.text = "Speed:\n" + animationSpeed.ToString() + "x";
         loadPosition();
         
 
@@ -74,38 +80,106 @@ public class TuringManager : MonoBehaviour
     void Update()
     {
         loadPosition();
-    }
-    void moveR(){
+        if (Input.GetKey(KeyCode.LeftArrow)){
+            moveLBt();
+        }
+        else if(Input.GetKey(KeyCode.RightArrow)){
+            moveRBt();
+        }
+        else if(Input.GetKey(KeyCode.DownArrow)){
+            nextSymbol();
+        }
+        else if(Input.anyKeyDown){
+            if(!isMachineExecuting && !isMachineMoving){
+                foreach(char c in Input.inputString){
+                    if(TM.sigmaTM.Contains(c)){
+                        if(C.pos >= 0)
+                            nonNegPos[C.pos] = TM.gammaTM.IndexOf(c);
+                        else
+                            negPos[C.pos] = TM.gammaTM.IndexOf(c);
+                        moveR();
+                    }
+                }
+            }
+        }
 
-        leftBt.onClick.RemoveListener(moveL);
-        rightBt.onClick.RemoveListener(moveR);
-        mudaC.onClick.RemoveListener(nextSymbol);
-        startBt.onClick.RemoveListener(startSim);
+    }
+
+    void speedUp(){
+        if(animationSpeed < 8)
+            animationSpeed *= 2;
+        currSpeed.text = "Speed:\n" + animationSpeed.ToString() + "x";
+    }
+
+    void speedDown(){
+        if(animationSpeed > 1)
+            animationSpeed /= 2;
+        currSpeed.text = "Speed:\n" + animationSpeed.ToString() + "x";
+    }
+
+    void moveRBt(){
+        moveR();
+    }
+
+    void moveLBt(){
+        moveL();
+    }
+    async System.Threading.Tasks.Task moveR(){
+        if(isMachineMoving){
+            return;
+        }
+        isMachineMoving = true;
 
         for(int i = 0; 7 > i; i++){
-            LeanTween.moveLocalX(tile[i], tile[i].transform.localPosition.x - 50f, animationSpeed);
+            LeanTween.moveLocalX(tile[i], tile[i].transform.localPosition.x - 50f, 1/animationSpeed);
         }
         //assign char to tileAux2
 
-        LeanTween.moveLocalX(tileAux2, tileAux2.transform.localPosition.x - 50f, animationSpeed);
-        StartCoroutine(afterR());
+        LeanTween.moveLocalX(tileAux2, tileAux2.transform.localPosition.x - 50f, 1/animationSpeed);
+
+        await System.Threading.Tasks.Task.Delay((int)((1/animationSpeed) * 1000));
+        
+        loadPosition();
+
+        C.pos++;
+        loadPosition();
+        isMachineMoving = false;
+
+        if(isMachineExecuting){
+            await System.Threading.Tasks.Task.Delay((int)((1/animationSpeed) * 4000));
+        }
+
+        return;
     }
 
-    void moveL(){
+    async System.Threading.Tasks.Task moveL(){
 
-        leftBt.onClick.RemoveListener(moveL);
-        rightBt.onClick.RemoveListener(moveR);
-        mudaC.onClick.RemoveListener(nextSymbol);
-        startBt.onClick.RemoveListener(startSim);
+        if(isMachineMoving){
+            return;
+        }
+        isMachineMoving = true;
 
         for(int i = 0; 7 > i; i++){
-            LeanTween.moveLocalX(tile[i], tile[i].transform.localPosition.x + 50f, animationSpeed);
+            LeanTween.moveLocalX(tile[i], tile[i].transform.localPosition.x + 50f, 1/animationSpeed);
         }
         //assign char to tileAux1
         
-        LeanTween.moveLocalX(tileAux1, tileAux1.transform.localPosition.x + 50f, animationSpeed);
-        StartCoroutine(afterL());
+        LeanTween.moveLocalX(tileAux1, tileAux1.transform.localPosition.x + 50f, 1/animationSpeed);
+        
+        await System.Threading.Tasks.Task.Delay((int)((1/animationSpeed) * 1000));
+
+        C.pos--;
+        loadPosition();
+
+        if(isMachineExecuting){
+            await System.Threading.Tasks.Task.Delay((int)((1/animationSpeed) * 4000));
+        }
+
+        isMachineMoving = false;
+
+        return;
     }
+
     void loadFromFile(){
         string filePath = Path.Combine(Application.dataPath, "saves", "save " + PlayerPrefs.GetInt("saveN").ToString());
         if (File.Exists(filePath))
@@ -120,6 +194,10 @@ public class TuringManager : MonoBehaviour
     }
 
     void nextSymbol(){
+        if(isMachineMoving){
+            return;
+        }
+        //isMachineMoving = true;
         if(C.pos >= 0){
             do
             {
@@ -140,87 +218,63 @@ public class TuringManager : MonoBehaviour
         loadPosition();
     }
 
-    void nextMove(){
-        failed = true;
+    async System.Threading.Tasks.Task nextMove(){
         if(TM.fTM.Contains(C.state)){
-            currState.text = "Accepted!";
-            currState.color = Color.green;
-            leftBt.onClick.AddListener(moveL);
-            rightBt.onClick.AddListener(moveR);
-            return;
+            passed = true;
         }
+        if(passed)
+            return;
+        int currState = C.state, curr;
         foreach(var it in TM.deltaTM[C.state]){
             if(C.pos >= 0){
                 if(it.rs == nonNegPos[C.pos]){
+                    int auxState = C.state, auxVal = nonNegPos[C.pos];
                     nonNegPos[C.pos] = it.ws;
                     C.state = it.ns;
-                    if(it.mt % 2 == 0)
-                        moveL();
-                    else
-                        moveR();
-                    failed = false;
-                    break;
+                    if(it.mt % 2 == 0){
+                        await moveL();
+                        await nextMove();
+                        if(passed)
+                            return;
+                        await moveR();
+                    }
+                    else{
+                        await moveR();
+                        await nextMove();
+                        if(passed)
+                            return;
+                        await moveL();
+                    }
+                    nonNegPos[C.pos] = auxVal;
+                    C.state = auxState;
+                    await System.Threading.Tasks.Task.Delay((int)((1/animationSpeed) * 4000));
                 }
             }
             else{
                 if(it.rs == negPos[-C.pos]){
+                    int auxState = C.state, auxVal = negPos[-C.pos];
                     negPos[-C.pos] = it.ws;
                     C.state = it.ns;
-                    if(it.mt % 2 == 0)
-                        moveL();
-                    else
-                        moveR();
-                    failed = false;
-                    break;
+                    if(it.mt % 2 == 0){
+                        await moveL();
+                        await nextMove();
+                        if(passed)
+                            return;
+                        await moveR();
+                    }
+                    else{
+                        await moveR();
+                        await nextMove();
+                        if(passed)
+                            return;
+                        await moveL();
+                    }
+                    negPos[C.pos] = auxVal;
+                    C.state = auxState;
+                    await System.Threading.Tasks.Task.Delay((int)((1/animationSpeed) * 4000));
                 }
             }
         }
-        if(failed){
-            currState.text = "Rejected!";
-            currState.color = Color.red;
-            leftBt.onClick.AddListener(moveL);
-            rightBt.onClick.AddListener(moveR);
-            return;
-        }
-        currState.text = "Current state: " + TM.qTM[C.state];
-        StartCoroutine(afterNextMove());
-    }
-
-    IEnumerator afterR()
-    {
-
-        yield return new WaitForSeconds(animationSpeed);
-
-        C.pos++;
-        loadPosition();
-
-        leftBt.onClick.AddListener(moveL);
-        rightBt.onClick.AddListener(moveR);
-        mudaC.onClick.AddListener(nextSymbol);
-        startBt.onClick.AddListener(startSim);
-
-    }
-
-    IEnumerator afterNextMove()
-    {
-
-        yield return new WaitForSeconds(animationSpeed*4);
-
-        nextMove();
-
-    }
-
-    IEnumerator afterL()
-    {
-
-        yield return new WaitForSeconds(animationSpeed);
-
-        C.pos--;
-        loadPosition();
-        leftBt.onClick.AddListener(moveL);
-        rightBt.onClick.AddListener(moveR);
-        mudaC.onClick.AddListener(nextSymbol);
-        startBt.onClick.AddListener(startSim);
     }
 
     void loadPosition(){
@@ -255,14 +309,28 @@ public class TuringManager : MonoBehaviour
         }
 
     }
-    void startSim(){
+    async void startSim(){
         //C.pos = 5;
+        passed = false;
+        isMachineExecuting = true;
         loadPosition();
-        leftBt.onClick.RemoveListener(moveL);
-        rightBt.onClick.RemoveListener(moveR);
+        leftBt.onClick.RemoveListener(moveLBt);
+        rightBt.onClick.RemoveListener(moveRBt);
         mudaC.onClick.RemoveListener(nextSymbol);
-        startBt.onClick.RemoveListener(startSim);
-        nextMove();
+
+        await nextMove();
+
+        if(passed){
+            acceptState.text = "Accepted!";
+            acceptState.color = Color.green;
+        }
+        else{
+            acceptState.text = "Rejected!";
+            acceptState.color = Color.red;
+        }
+        leftBt.onClick.AddListener(moveLBt);
+        rightBt.onClick.AddListener(moveRBt);
+        mudaC.onClick.AddListener(nextSymbol);
 
     }
 
