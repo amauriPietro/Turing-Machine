@@ -79,6 +79,7 @@ public class TuringManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        machineState.text = "Current state: " + TM.qTM[C.state];
         loadPosition();
         if (Input.GetKey(KeyCode.LeftArrow)){
             moveLBt();
@@ -331,6 +332,7 @@ public class TuringManager : MonoBehaviour
         leftBt.onClick.AddListener(moveLBt);
         rightBt.onClick.AddListener(moveRBt);
         mudaC.onClick.AddListener(nextSymbol);
+        isMachineExecuting = false;
 
     }
 
